@@ -1,0 +1,61 @@
+version: '3'
+networks:
+  monitoring:
+    external:
+      name: monitoring-container
+
+services:
+      grafana:
+          image: grafana/grafana:latest
+          container_name: grafana-monitoring
+          ports: 
+            - 2000:3000
+          networks:
+            - monitoring
+          volumes:
+            - ./grafana/grafana_db:/var/lib/grafana
+          restart: always
+      cadvisor:
+          image: google/cadvisor:latest
+          container_name: cadvisor-monitoring
+          restart: always
+          expose: 
+            - "8080"
+          networks:
+            - monitoring
+          volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+      nodexporter:
+          image: prom/node-exporter:latest
+          container_name: nodeexporter-monitoring
+          networks: 
+            - monitoring
+          volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+          command: 
+             - '--path.procfs=/host/proc' 
+             - '--path.sysfs=/host/sys'
+             - --collector.filesystem.ignored-mount-points
+             - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+          expose: 
+            - "9100"
+          restart: always
+      prometheus:
+          image: prom/prometheus:latest
+          user: root
+          container_name: prometheus-monitoring
+          expose:
+            - "9090"
+          networks:
+            - monitoring
+          volumes:
+            - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./prometheus/prometheus_db:/prometheus
+            - ./prometheus/prometheus_db:/etc/prometheus
+            - ./prometheus/prometheus_db:/var/lib/prometheus
+          restart: always
