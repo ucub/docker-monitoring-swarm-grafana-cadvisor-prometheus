@@ -28,34 +28,7 @@ services:
         reservations:
           cpus: '0.10'
           memory: 64M
-# Template Node Exporter
-  node:
-    image: prom/node-exporter:latest
-    networks:
-      - monitoring
-    volumes:
-      - /proc:/host/proc
-      - /sys:/host/sys
-      - /:/rootfs
-      - /etc/hostname:/etc/host_hostname
-    ports:
-      - "3003:9100"
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--path.rootfs=/host'
-      - '--collector.textfile.directory=/etc/node-exporter/'
-      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
-      - '--no-collector.ipvs'
-    deploy:
-      mode: global
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 32M
-        reservations:
-          cpus: '0.10'
-          memory: 16M
+
 # Template prometheus manager
   prometheus:
     image: prom/prometheus:latest
